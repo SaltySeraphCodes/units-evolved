@@ -1,0 +1,9 @@
+{
+   "allow_add_mods" : true,
+   "custom_icons" : false,
+   "description" : "Evovlving and ai controled units. Along with Chat controlled units as well",
+   "localId" : "0702feb5-0599-4165-a564-b1c7359e8836",
+   "name" : "SM_Units_Evolved",
+   "type" : "Custom Game",
+   "version" : 0
+}

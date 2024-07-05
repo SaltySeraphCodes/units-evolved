@@ -1,0 +1,568 @@
+{% extends 'overlay_base.html' %}
+{% block title %}
+Simulation Map Display
+{% endblock %}
+{% block content %}
+<div id="gridMap">
+</div>
+	<script>	
+		// THis displays the map grid
+
+	function reloadChart(data){
+		d3.select("#gridMap").selectAll("svg").remove();
+		reloadGraphic(data);
+	}
+
+	function reloadGraphic(data){
+			drawData(data);
+	}
+	// timing test
+	var startTime = Date.now();
+	var splitTime = startTime;
+	//console.log('Loading Simulation Map',data)
+	// Global chart element vars
+	// data helpers
+	var yScale;
+	var labelScale;
+	var xScale;
+	var sizeScaleX;
+	var sizeScaleY;
+	var chart_area;
+	var interactive_chart;
+	var chartSettings;
+
+	// helper functions
+	function generateGridLabels(numSquares) { // returns two arrays with data label strings for grid size
+		let fullXlabels = ["A","B","C","D","E",'F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+		let fullYlabels = ["1","2","3","4","5",'6','7','8','9','10','11K','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26'];
+		if (!numSquares){
+			return [[], []]
+		}
+		let xLabels = fullXlabels.slice(0,numSquares);
+		let yLabels = fullYlabels.slice(0,numSquares);
+		return [xLabels,yLabels]
+	}
+	// Visible elements
+
+	var gridBG; // The background squares that contain the data
+	var posRects;
+
+	var all_elements = []
+
+	function createMap(data) {
+		if (data['ai'] == null){return} // just no, no data basicaly
+		var numSquares = data['ai']['g']
+		var squareSize = data['ai']['s'] / numSquares
+		var gridData = data['mg'];
+		var metaGrid = gridData['g']; // actual grid data
+		var arenaInfo = data['ai'];
+		var xlabelList,ylabelList = [];
+		if (metaGrid == null ){ return } //. not worth tryingt o make grid without partams
+		labelDuos = generateGridLabels(numSquares); //returns x labels (A-Z) and Y labels (1-26)
+		xlabelList = labelDuos[0];
+		ylabelList = labelDuos[1];
+		chartSettings = { width: 800, height: 800, margin: {left: 50, right:50, top: 50, bottom:50}}
+		//console.log("labels",xlabelList,ylabelList)
+		xScale = d3.scaleLinear()
+			.domain([0,data['ai']['s']]) // grid will always have max translated width of 100
+			.range([chartSettings.margin.left,chartSettings.width - (chartSettings.margin.right)]);
+		yScale = d3.scaleLinear()
+			.domain([0,data['ai']['s']]) // grid will always have max translated height of 100
+			.range([chartSettings.margin.top,chartSettings.height - (chartSettings.margin.bottom)]);
+		sizeScaleX = d3.scaleLinear()
+			.domain([0,data['ai']['s']]) 
+			.range([0,chartSettings.width - chartSettings.margin.left - chartSettings.margin.right]);
+		sizeScaleY = d3.scaleLinear()
+			.domain([0,data['ai']['s']]) 
+			.range([0,chartSettings.height - chartSettings.margin.top - chartSettings.margin.bottom]);
+		labelScaleX=d3.scaleLinear() 
+			.domain([0,xlabelList.length]) // -1?
+			.range([chartSettings.margin.left,chartSettings.width - chartSettings.margin.right]);
+		labelScaleY=d3.scaleLinear()
+			.domain([0,ylabelList.length]) // -1?
+			.range([chartSettings.margin.top,chartSettings.height - chartSettings.margin.bottom]);
+		
+			//.range([0,chartSettings.height - chartSettings.margin.top]);
+
+		chart_area = d3.select("#gridMap").append("svg")
+			.attr('width', chartSettings.width)
+			.attr('height',chartSettings.height)
+		interactive_chart = chart_area.append('g')
+		
+		var bgRect = interactive_chart.append('rect') // Black background
+		.attr("x",chartSettings.left)
+		.attr('y',chartSettings.top)
+		.attr("rx",1)
+		.attr('ry',1)
+		.attr('width',chartSettings.width)
+		.attr('fill','black')
+		.attr('height',chartSettings.height)
+		.attr("opacity",0.7)
+
+		/* template for loading image
+		var imageSize = 230
+		var smarlLogo = interactive_chart.append('image')
+		.attr('xlink:href', "{{url_for('static', filename='images/SMARLLOGO3.png')}}")
+		.attr('x',xScale(0))
+		.attr('y',22 + chartSettings.margin.top - imageSize/2)
+		.attr('opacity',0)
+	 	.attr('width', imageSize)
+		.attr('height', imageSize + 50)
+		.transition()
+		.delay(1000)
+		.attr('opacity',1)
+		.duration(900)
+		*/
+
+		//Header
+		var header = interactive_chart.append("text")
+		.attr('class','headerText')
+		.attr("x", chartSettings.width/2)
+		.attr("y", 18)
+		.text("Arena Map")
+		.attr('text-anchor', 'middle')
+		.attr('alignment-baseline', 'central')
+		.attr('font-family',"sans-serif")
+		.attr('font-weight',"bold")
+		.attr('font-size','40px')
+		.attr('fill','white')
+		.attr("opacity",1)
+		
+
+
+		// X label teexts ( letters acrooss top)
+		var Xlabels= interactive_chart.selectAll(".XlabelText")
+		.data(xlabelList)
+
+		Xlabels.enter()
+		.append('text')
+		.attr('class', 'XlabelText')
+		.attr('text-anchor', 'middle')
+		.attr('alignment-baseline', 'central')
+		.attr("x", function(d,i){
+			var letter = d
+			return (labelScaleX(i) + sizeScaleX(squareSize) / 2)
+		})
+		.attr("y",chartSettings.margin.top -7)
+		.attr("opacity",1)
+		.text(function(d,i){
+			return d
+		})
+		.attr('font-family',"sans-serif")
+		.attr('font-size','15px')
+		.attr('font-weight',"bold")
+		.attr('fill','white')
+		
+		Xlabels.exit()
+		.transition()
+		.attr("opacity",0)
+		.duration("{{properties.transition_longer}}")
+		.remove()
+
+		// X endpoint label (0,arenaSize)
+		console.log("")
+		var labelNums = [0,data['ai']['s']]
+		console.log(labelNums)
+		var xEndText= interactive_chart.selectAll(".xEndText")
+		.data(labelNums)
+
+		xEndText.enter()
+		.append('text')
+		.attr('class', 'xEndText')
+		.attr('text-anchor', 'middle')
+		.attr('alignment-baseline', 'central')
+		.attr("x",(d,i) => {
+			return xScale(d)
+		})
+		.attr("y",chartSettings.margin.top -7)
+		.attr("opacity",1)
+		.text((d,i) => {
+			return d.toString()
+		})
+		.attr('font-family',"sans-serif")
+		.attr('font-size','13px')
+		.attr('font-weight',"bold")
+		.attr('fill','#90ee90')
+		
+		xEndText.exit()
+		.transition()
+		.attr("opacity",0)
+		.duration("{{properties.transition_longer}}")
+		.remove()
+
+
+
+
+		// Y label text
+		var Ylabels= interactive_chart.selectAll(".YlabelText")
+		.data(ylabelList)
+
+		Ylabels.enter()
+		.append('text')
+		.attr('class', 'YlabelText')
+		.attr('text-anchor', 'middle')
+		.attr('alignment-baseline', 'central')
+		.attr("y", function(d,i){
+			var letter = d
+			return (labelScaleY(i) + sizeScaleY(squareSize) / 2)
+		})
+		.attr("x",chartSettings.margin.left -14)
+		.attr("opacity",1)
+		.text(function(d,i){
+			return d
+		})
+		.attr('font-family',"sans-serif")
+		.attr('font-size','15px')
+		.attr('font-weight',"bold")
+		.attr('fill','white')
+
+		Ylabels.exit()
+		.transition()
+		.attr("opacity",0)
+		.duration("{{properties.transition_longer}}")
+		.remove()
+
+		var yEndText= interactive_chart.selectAll(".yEndText")
+		.data(labelNums)
+
+		yEndText.enter()
+		.append('text')
+		.attr('class', 'yEndText')
+		.attr('text-anchor', 'middle')
+		.attr('alignment-baseline', 'central')
+		.attr("x",chartSettings.margin.left - 14)
+		.attr("y",(d,i) => {
+			return xScale(d) + 5 // probs need to suptract
+		}) // might need to adjust
+		.attr("opacity",1)
+		.text(function(d,i){
+			return d.toString()
+		})
+		.attr('font-family',"sans-serif")
+		.attr('font-size','13px')
+		.attr('font-weight',"bold")
+		.attr('fill','#90ee90')
+		
+		yEndText.exit()
+		.transition()
+		.attr("opacity",0)
+		.duration("{{properties.transition_longer}}")
+		.remove()
+
+
+		// Build grid (via squares)\\
+		let flattenedData = metaGrid.flat();
+		//console.log("got flattened array",flattenedData)
+		GridSquares = interactive_chart.selectAll(".gridSquares")
+		.data(flattenedData)
+		
+		// Enter
+		GridSquares.enter()
+		.append("rect")
+		.attr("class","gridSquares")
+		.attr('rx',0)
+		.attr('ry',0)
+		.attr("x",function(d,i){
+			let centerLoc = d['c']
+			let leftX = centerLoc['x'] - (d['s']/2)
+			//console.log(leftX)
+			return xScale(leftX)
+		})
+		.attr("y",function (d,i){
+			let centerLoc = d['c']
+			let leftY = centerLoc['y'] - (d['s']/2)
+			//console.log(leftY)
+			return yScale(leftY)
+		})
+		.attr("width",function(d,i){
+			//console.log('w',sizeScaleX(d['s']))
+			return sizeScaleX(d['s'])
+		})
+		.attr("height",function(d,i){
+			//console.log('h',sizeScaleY(d['s']))
+			return sizeScaleY(d['s'])
+		})
+		.attr("fill",'#00000000')
+		.attr('stroke','white')
+		.attr('stroke-width',0.5)
+		.attr("opacity",1)
+		boardCreated = true;
+	}
+	//--------------------------
+	function drawData(data){
+		let elapsedTime = Date.now() - splitTime;
+		//console.log(elapsedTime)
+		splitTime = Date.now() // immediately reset??
+		let cow_data = data['ci']
+		var all_cows = cow_data['c']
+		// -- Build cow data: color coded circle with name text (possibly change shape too?)
+		if (all_cows == null){ all_cows = []}	
+			//Cow Circle circle to represent cow
+			cowCirc = interactive_chart.selectAll(".cowCirc")
+			.data(all_cows)
+
+			cowCirc.enter()
+			.append('circle')
+			.attr("class","cowCirc")
+			.attr("cx",function(d,i){
+				return xScale(d.p['x'])
+			})
+			.attr('cy',function(d,i){
+				return yScale(d.p['y'])
+			})
+			.attr("r",function(d,i){
+				return sizeScaleX(5) 
+			}) // TODO: make proportionate to health??
+			.attr("fill",function(d,i){ // TODO: make based off of state
+				return "#ffa990"
+			})
+			.attr('stroke',function(d,i){
+				return "#000000"
+			})
+			.attr('stroke-width',0.5) // TODO: make dynamic with cow defense
+			.attr("opacity",0)
+			.transition() // spawned in
+			.attr("cx",function(d,i){
+				return xScale(d.p['x'])
+			})
+			.attr('cy',function(d,i){
+				return yScale(d.p['y'])
+			})
+			.attr("opacity",1)
+			.attr("r",function(d,i){
+				return sizeScaleX(0.7) 
+			}) // TODO: make proportionate to health??
+			.attr("fill",function(d,i){ // TODO: make based off of state
+				return "#ffa990"
+			})
+			.attr('stroke',function(d,i){
+				return "#000000"
+			})	
+			.duration(500)
+
+			cowCirc.transition() // when cow moves
+			.attr("cx",function(d,i){
+				return xScale(d.p['x'])
+			})
+			.attr('cy',function(d,i){
+				return yScale(d.p['y'])
+			})
+			.attr("fill",function(d,i){
+				return "#5fa990"
+			})
+			.attr("r",function(d,i){
+				return sizeScaleX(1) 
+			}) // TODO: make proportionate to health??
+			.attr('stroke',function(d,i){
+				return "#ffffff"
+			})	
+			.attr("opacity",1)
+			.ease(d3.easeLinear)
+			.duration(elapsedTime)
+
+			cowCirc.exit()
+			.transition()
+			.attr("fill",function(d,i){
+				return "#af0000"
+			})
+			.attr("opacity",0)
+			.attr("r",function(d,i){
+				return sizeScaleX(2) 
+			}) // TODO: make proportionate to health??
+			.duration("750")
+			.remove()
+			all_elements.push(cowCirc)
+			
+			// Cow usernames
+			nameText = interactive_chart.selectAll(".nameText")
+			.data(all_cows)
+
+			nameText.enter()
+			.append('text')
+			.attr('class','nameText')
+			.attr("x", function(d,i){
+				return xScale(d.p['x'])
+			})
+			.attr('y',function(d,i){
+				return xScale(d.p['y']) - 10 // TODO: figure out good/dynamic height
+			})
+			.attr('dx',"0em") // put offset here?
+			.attr('dy',"0em")
+			.text(function(d,i){ return d['n']})
+			.attr('font-family',"sans-serif")
+			.attr('font-size','12px')
+			.attr('stroke','white')
+			.attr('stroke-width',0.3)			
+			.attr('fill','#3377ff')
+			.attr('text-anchor', 'middle')
+			.attr('alignment-baseline', 'central')
+			.attr("opacity",0)
+			.transition()
+			.attr("opacity",1)
+			.duration(500)
+
+			nameText.transition()
+			.attr("x", function(d,i){
+				return xScale(d.p['x'])
+			})
+			.attr('y',function(d,i){
+				return xScale(d.p['y']) - 10 // TODO: figure out good/dynamic height
+			})
+			.attr('dx',"0em") // put offset here?
+			.attr('dy',"0em")
+			.attr('fill','#3377ff')
+			.attr("opacity",1)
+			.text(function(d,i){ return d['n']})
+			.ease(d3.easeLinear)
+			.duration(elapsedTime)
+
+
+			nameText.exit()
+			.transition()
+			.attr("opacity",0)
+			.duration(500)
+			.remove()
+			all_elements.push(nameText)
+
+		// Grid mapp Elements (corn, enemies, bases?)
+		//Racer secondary color - small triangle/corner that represents racer's secondary color
+		var lineGenerator = d3.line()
+                    .x(function(d) { return xScale(d[0]) + 90 })
+                    .y(function(d) { return d[1] });
+		
+		function triangleGenerator(posY,width,height){
+			return [ [0,posY], [width,posY], [width,posY + height]]
+		}
+		
+		// Sponsor/
+		/*
+		var imageSize = 45
+		sponsorLogo = interactive_chart.selectAll(".sponsorImg")
+		.data(data)
+
+		sponsorLogo.enter()
+		.append('image')
+		.attr('class','sponsorImg')
+		
+		.attr('xlink:href', function(d,i){
+			//let logo = 'bknLogo.png' // make dynamic with d['logo'] have a connected table linked
+			let logo = d['sponsor']
+			if (logo == ''){
+				logo = 'empty.png'
+			}
+			
+			let logoURL ="{{url_for('static',filename='images/SponsorImages/')}}"
+			let fullURL = logoURL.concat(logo)
+			return fullURL	
+		})
+		.attr('x',xScale(2000)) // 2300 for when teams are added
+		.attr('y',function(d,i){
+			return yScale(Number(i + 1)) +3
+		}) 
+		.attr('opacity',0)
+	 	.attr('width', imageSize)
+		.attr('height', imageSize)
+
+		.transition()
+		.attr('x',labelScale(3) + 20) // 4 when teams are added
+		.attr('opacity',1)
+		.delay(1000)
+		.attr('y',function(d,i){
+			return yScale(Number(i + 1)) +3
+		}) 
+		
+		.duration("{{properties.transition_longer}}")
+
+     	sponsorLogo.transition()
+     	.duration("{{properties.transition_longer}}")
+		.attr('opacity',1)
+		.attr('x',labelScale(3) + 20) // 4 when teams are added
+		.attr('y',function(d,i){
+			return yScale(Number(i + 1)) +3
+		}) 
+		.attr('xlink:href', function(d,i){
+			//let logo = 'bknLogo.png' // make dynamic with d['logo'] have a connected table linked
+			let logo = d['sponsor']
+			if (logo == ''){
+				logo = 'empty.png'
+			}
+			//let urlBegin ='images/';
+			//let fullURL = urlBegin + logoEnd;
+			let logoURL ="{{url_for('static',filename='images/SponsorImages/')}}"
+			let fullURL = logoURL.concat(logo)
+			return fullURL	
+		})
+
+     	sponsorLogo.exit()
+		.attr('opacity',0)
+		//.duration("{{properties.transition_longer}}")
+		.remove()
+		*/
+	}
+
+	</script>
+	<script> 
+		// loads,parses, and calls all chart creation
+		var boardCreated = false;	
+		var smarl_data  = [] 
+	   // Helper functions
+		function findObjectByKey(array, key, value) {
+		  for (var i = 0; i < array.length; i++) {
+			  if (array[i][key] === value) {
+				  return array[i];
+			  }
+		  }
+		  return null;
+		}
+		function findIndexByKey(array, key, value) {
+		  for (var i = 0; i < array.length; i++) {
+			  if (array[i][key] === value) {
+				  return i;
+			  }
+		  }
+		  return null;
+		  }
+	  // SOCKET FUNCTIONS
+		var socket = io.connect('http://' + document.domain + ':' + location.port); // Since I'm too lazy, this will be the same as GetRace, just show different data
+		socket.on( 'connect', function() {
+		  	socket.emit( 'getData', {
+			data: 'getData'
+		  }) })
+		 
+		socket.on( 'simData', function( data ) {
+			if (data == null){return}
+			let size = Object.keys(data).length;
+			if (size > 0 && !boardCreated){
+				initialize(data)
+			} else if(size > 0 && boardCreated){
+				updateGraphic(data)
+			}else{
+				console.log("No data yet??")
+			}
+	
+		  /*var dataIndex = findIndexByKey(smarl_data,'id',racerID)
+		  if (dataIndex == null ){
+			smarl_data.push(data)
+		  }else{
+			smarl_data[dataIndex] = data
+		  }
+		  console.log(smarl_data)*/
+		})
+		function initialize(data){
+			//updateInterval = setInterval(updateGraphic, 1000);
+			
+			createMap(data);
+		}
+		function updateGraphic(data){
+			// Do whatever too
+			reloadGraphic(data);
+		}
+		
+	
+		$(document).ready(function() {
+			
+		});
+		</script>
+
+{% endblock %}
+

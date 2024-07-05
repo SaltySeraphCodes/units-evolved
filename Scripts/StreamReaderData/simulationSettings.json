@@ -1,0 +1,13 @@
+
+{
+	"allow_explode" : true,
+	"allow_move" : true,
+	"allow_spawn" : true,
+	"default_spawn" : false,
+	"enable_ap" : false,
+	"enable_food" : false,
+	"enable_logout" : true,
+	"enable_peaceful" : false,
+	"peaceful_mode" : false,
+	"show_seraph" : false
+}

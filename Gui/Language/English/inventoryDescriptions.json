@@ -1,0 +1,6 @@
+{
+   "1b7b247c-20b1-4dd0-afe6-6b235b7c30fa" : {
+      "description" : "Spawns Bots and begins RTS logic, paint to assign team",
+      "title" : "Evolved Brain"
+   }
+}

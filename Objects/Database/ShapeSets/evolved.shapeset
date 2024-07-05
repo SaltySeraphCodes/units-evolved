@@ -1,0 +1,95 @@
+{
+   "partList" : [
+      {
+         "color" : "FFF00",
+         "hull" : {
+            "col" : "$SURVIVAL_DATA/Objects/Collision/obj_decor_sunshakemachine.obj",
+            "x" : 5,
+            "y" : 8,
+            "z" : 5
+         },
+         "name" : "obj_interactive_shark",
+         "physicsMaterial" : "Metal",
+         "ratings" : {
+            "density" : 1,
+            "durability" : 5,
+            "friction" : 9
+         },
+         "renderable" : "$SURVIVAL_DATA/Objects/Renderable/decor/obj_decor_sunshakemachine.rend",
+         "restrictions" : {
+            "buildable" : true,
+            "connectable" : true,
+            "destructable" : true,
+            "erasable" : true,
+            "paintable" : true,
+            "usable" : true
+         },
+         "rotationSet" : "PropY",
+         "scripted" : {
+            "classname" : "Brain",
+            "data" : {},
+            "filename" : "$CONTENT_DATA/Scripts/evoBrain.lua"
+         },
+         "showInInventory" : true,
+         "uuid" : "1b7b247c-20b1-4dd0-afe6-6b235b7c30fa"
+      },
+            {
+         "box" : {
+            "x" : 3,
+            "y" : 8,
+            "z" : 4
+         },
+         "color" : "e1a234",
+         "flammable" : false,
+         "name" : "obj_interactive_beacon",
+         "physicsMaterial" : "Mechanical",
+         "ratings" : {
+            "buoyancy" : 2,
+            "density" : 3,
+            "durability" : 10,
+            "friction" : 3
+         },
+         "renderable" : {
+            "lodList" : [
+               {
+                  "mesh" : "$SURVIVAL_DATA/Objects/Mesh/interactive/obj_interactive_beacon.fbx",
+                  "minViewSize" : 55,
+                  "pose0" : "$SURVIVAL_DATA/Objects/Mesh/interactive/obj_interactive_beacon_pose0.fbx",
+                  "subMeshMap" : {
+                     "radar" : {
+                        "material" : "PoseAnimDifAsgNor",
+                        "textureList" : [
+                           "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beacon_dif.tga",
+                           "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beacon_asg.tga",
+                           "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beacon_nor.tga"
+                        ]
+                     },
+                     "radar_uvanim" : {
+                        "custom" : {
+                           "uv0" : {
+                              "u" : 1,
+                              "v" : 0.250
+                           }
+                        },
+                        "material" : "PoseUVAnimDifAsg",
+                        "textureList" : [
+                           "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beaconuvanim_dif.tga",
+                           "$SURVIVAL_DATA/Objects/Textures/interactive/obj_interactive_beaconuvanim_asg.tga",
+                           ""
+                        ]
+                     }
+                  }
+               }
+            ]
+         },
+         "rotationSet" : "PropY",
+         "scripted" : {
+            "classname" : "Control",
+            "data" : {},
+            "filename" : "$MOD_DATA/Scripts/GameMaster.lua"
+         },
+         "sticky" : "-Y+X-X-Z+Z",
+         "uuid" : "0239d820-3ef5-44f3-a4dc-ab9b4678278e"
+      }
+   ]
+}
