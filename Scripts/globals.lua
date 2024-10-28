@@ -9,7 +9,7 @@ SIMULATION_SETTINGS_FILE = SREADER_FOLDER .. "/simulationSettings.json"
 --CAMERA_FOLDER = "$CONTENT_d42a91c3-2f86-4923-add5-93d8258b2c08/"
 -- SELF FOLDER =- "$CONTENT_5411dc77-fa28-4c61-af84-bcb1415e3476/"
 sm.SMARGlobals = {
-    LOAD_CAMERA = true, -- REMEMBER TO SET THIS TO FALSE
+    LOAD_CAMERA = false, -- REMEMBER TO SET THIS TO FALSE
     SMAR_CAM = -1 -- Smar camera loaded from cinecam mod
 }
 
@@ -289,37 +289,45 @@ function worldToGridTranslate(edgeMatrix,location) -- Translates world locations
     local newLocation = sm.vec3.new(worldLocX,worldLocY,location.z) -- same z
     return newLocation
 end
----- Racer meta data helps
-function sortRacersByRacePos(inTable)
-    table.sort(inTable, racePosCompare)
-	return inTable
+
+-- client onhover checker
+function cl_checkHoverShape(check_shape) -- checks if shape is being looked at
+    local hit,raycastResult = sm.localPlayer.getRaycast(10)
+    if hit then
+        local shape = raycastResult:getShape()
+        if shape then
+            if check_shape == shape then
+                return true
+            else
+                return false
+            end
+        else
+            return false
+        end
+    else
+        return false
+    end
+    return false
 end
 
-function sortRacersByCameraPoints(inTable)
-    table.sort(inTable,cameraPointCompare)
-    return inTable
+
+-- client onhover checker
+function cl_checkHoverChar(check_char) -- checks if shape is being looked at
+    local hit,raycastResult = sm.localPlayer.getRaycast(10)
+    if hit then
+        local char = raycastResult:getCharacter()
+        if char then
+            if check_char == char then
+                --print("h")
+                return true
+            else
+                return false
+            end
+        else
+            return false
+        end
+    else
+        return false
+    end
+    return false
 end
-
-function sortCamerasByDistance(inTable)
-    table.sort(inTable,camerasDistanceCompare)
-    return inTable
-end
-
-function racerIDCompare(a,b)
-	return a['id'] < b['id']
-end 
-
-function racePosCompare(a,b)
-	return a['racePosition'] < b['racePosition']
-end 
-
-function cameraPointCompare(a,b) -- sort so biggest is first
-    return a['points'] > b['points']
-end
-
-function camerasDistanceCompare(a,b)
-    return a['distance'] < b['distance']
-end
--- Need a check min or some way to figure out which is which
--- *See SMARL FRICTION RESEARCH for data chart
-print("loaded globals and helpers")

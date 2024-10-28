@@ -837,6 +837,23 @@ function UnitManager.sv_makeExplode(self,params) -- explodes unit if works?
 end
 
 
+
+function UnitManager.sv_makeSpin(self,params) -- Makes unit spin
+	local userid = params.data.userid
+	local unitData = findUseridInList(self.spawnedChatters,userid)
+	if unitData == false then
+		sm.log.error("users unit not found",userid,unitData,params)
+		return
+	end
+	local unit = unitData.unit
+	params['unit'] = unit
+	--params['world'] = para
+	if sm.exists( unitData.unit ) then  
+		sm.event.sendToUnit( unitData.unit, "sv_recieveEvent", {event = "spin", data = params} )
+	end
+end
+
+
 -------------------------------
 
 function UnitManager.sv_removeChatterFromGame(self,userid) -- remove user from known table, possibly implement binary search? or faster method

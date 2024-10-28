@@ -497,6 +497,15 @@ function StreamReader.runInstruction(self,instruction) -- (client)?
             print("nil world")
         end
         self.network:sendToServer( "sv_sendUnitExplode", params )
+    elseif chatInstruction == "/spin" then -- isis tiem
+        local params = {command = 'spin', data = {userid = instruction.userid} }
+        chatMessage = {'Spinning Cow'} -- no params
+        if self.world ~= nil then
+            params.world = self.world
+        else
+            print("nil world")
+        end
+        self.network:sendToServer( "sv_sendUnitSpin", params )
     elseif chatInstruction == "/chat" then -- chat message will appear with unit, making unit emit noise effect
         if #chatParam > 90 then
            print("long chat, auto add linebreak?")
@@ -621,7 +630,6 @@ function StreamReader.sv_onFixedUpdate( self, timeStep )
 end
 
 function StreamReader.cl_onFixedUpdate( self, timeStep ) -- Why client? wouldnt server be faster?
-   
     if self.initialized then
         local dead = self.player:getCharacter():isDowned()
         if dead and not self.playerDead then

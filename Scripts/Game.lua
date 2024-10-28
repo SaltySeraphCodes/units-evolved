@@ -828,8 +828,16 @@ function Game.sv_sendUnitExplode(self,params) -- explodes cow but is world unit 
 	if g_unitManager then
 		g_unitManager:sv_makeExplode(params)
 	end
-	
 end
+
+
+function Game.sv_sendUnitSpin(self,params) -- explodes cow but is world unit i think
+	if g_unitManager then
+		g_unitManager:sv_makeSpin(params)
+	end
+end
+
+
 -- Get data from manager
 function Game.getSpawnedChatters(self)
 	if g_unitManager then

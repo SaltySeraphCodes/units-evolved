@@ -842,7 +842,7 @@ function Control.client_onInteract(self,character,state)
                 --print("start viewing cam")
                 --getSmarCam():cl_ping("Viewing")
                 self:cl_sendCameraCommand({command="EnterCam", value = true})
-                sm.localPlayer.getPlayer():getCharacter():setLockingInteractable(self.interactable) -- wokrs??
+                sm.localPlayer.getPlayer():getCharacter():setLockingInteractable(self.interactable)
                 self.viewIngCamera = true
                 self.frameCountTime = 0
                 self.camTransTimer = 1
@@ -866,7 +866,7 @@ end
 
 function Control.client_exitCamera(self) -- stops viewing camera
     self:cl_sendCameraCommand({command="ExitCam", value = false})
-    sm.localPlayer.getPlayer():getCharacter():setLockingInteractable(nil) -- wokrs??
+    sm.localPlayer.getPlayer():getCharacter():setLockingInteractable(nil)
     sm.camera.setCameraState(1)
     self.viewIngCamera = false
     print("exiting cam mode")

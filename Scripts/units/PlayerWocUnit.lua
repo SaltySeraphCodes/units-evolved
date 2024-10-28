@@ -158,6 +158,15 @@ function WocUnit.server_onCreate( self )
 	self.eatEventState.interruptible = false
 	self.eatEventState.name = "eat"
 
+	-- Spin
+	self.isSpin = false
+	self.curDir = sm.vec3.new(0,1,0)
+	self.spinSpeed = 1 
+	self.spinClock = 0
+	-- Repeated commands reduce spin update Rate to increase Spin
+	self.spinState = self.unit:createState("spin")
+
+
 	-- Tumble
 	initTumble( self )
 	
@@ -184,6 +193,21 @@ function WocUnit.server_onDestroy( self )
 		sm.event.sendToWorld(self.world,'sv_e_unit_killed',self.userid)
 		sm.event.sendToGame('sv_e_unit_killed',self.userid)
 	end
+
+
+end
+
+function WocUnit.client_onDestroy( self )
+	--print( "-- WocUnit terminated --",self.username)
+	--if self.userid then
+		--print("sending kill to world",self.world)
+	--	sm.event.sendToWorld(self.world,'sv_e_unit_killed',self.userid)
+	--	sm.event.sendToGame('sv_e_unit_killed',self.userid)
+	--end
+	local usernameColor = "#ff0000"
+	local textColor = "#ffffff"
+	sm.gui.chatMessage("" ..usernameColor.. self.username .. textColor.." Died")
+	
 
 end
 
@@ -244,6 +268,9 @@ function WocUnit.server_onFixedUpdate( self, dt )
 		self.storage:save( self.saved )
 	end
 end
+
+
+
 
 function WocUnit.server_onUnitUpdate( self, dt )
 	if not sm.exists( self.unit ) then
@@ -332,7 +359,14 @@ end
 		end
 	end
 	-- end followtest
-
+	if self.isSpin then
+		-- Runs realtime
+		self.spinClock = self.spinClock + 1
+		self.curDir = self.unit:getCurrentFacingDirection()
+		local newDir = self.curDir:rotateZ(math.rad(self.spinSpeed))
+		--print(self.curDir,newDir,self.spinSpeed)
+		self.unit:setFacingDirection(newDir)
+	end
 	-- goto 
 	if self.isGoto then
 		self.saved.stats.state = 2
@@ -377,7 +411,7 @@ end
 							( self.fleeFrom ) or
 							( ( self.currentState == self.pathingState or self.currentState == self.roamState ) and cornInRange )
 						)
-	if ( done or abortState ) then
+	if ( done or abortState ) then -- starts new State but no run
 		-- Select state
 		if self.fleeFrom then
 			self.saved.stats.state = 3
@@ -423,6 +457,9 @@ end
 				self.currentState = self.pathingState -- TDODO: may cause random bugs
 				self.currentState:start()
 			end
+		elseif self.isSpin then
+			--print("start woc spin")
+			-- also runs realtime
 
 		elseif self.isGoto then  -- BUG: cow stops on /stop and does not go again
 			self.saved.stats.state = 2
@@ -567,6 +604,15 @@ function WocUnit.sv_flee( self, from )
 	self.currentState:start()
 end
 
+
+function WocUnit.sv_spin(self,rate)
+	-- add if statement so that if spin is already started, increases spinSpeed
+	self.currentState:stop()
+	self.currentState = self.spinState
+	self.isSpin = true
+	self.currentState:start()
+end
+
 function WocUnit.sv_takeDamage( self, damage ) -- use defense stat here
 	if self.saved.stats.hp > 0 then
 		self.saved.stats.hp = self.saved.stats.hp - damage
@@ -627,11 +673,13 @@ function WocUnit.sv_recieveEvent(self,params)
 		self.isGoto = nil
 		self.fleeFrom = nil
 		self.isFollowing = params.data
+		self.isSpin = false
 	elseif params.event == "setAttack" then -- sets target to attack is
 		self.isGoto = nil
 		self.fleeFrom = nil
 		self.isFollowing = nil
 		self.target = params.data
+		self.isSpin = false
 	elseif params.event == "setGoto" then
 		--print("Changing state to goto",params.data) --TODO: complete this
 		--self.currentState:stop()
@@ -639,11 +687,14 @@ function WocUnit.sv_recieveEvent(self,params)
 		self.isFollowing = nil
 		self.target = nil
 		self.isGoto = params.data
+		self.isSpin = false
 	elseif params.event == "setFlee" then
 		self.fleeFrom = params.data
 		self.isFollowing = nil -- remove that
 		self.target = nil
 		self.isGoto = nil
+		self.isSpin = false
+
 	elseif params.event == "setStop" then
 		self.currentState:stop()
 		self.isFollowing = nil
@@ -652,6 +703,7 @@ function WocUnit.sv_recieveEvent(self,params)
 		self.saved.stats.state = 0
 		self.currentState = self.idleState -- Original IDLE.
 		self.currentState:start()
+		self.isSpin = false
 	elseif params.event == "explode" then
 		sm.effect.playEffect( "Woc - Panic", self.unit.character.worldPosition ) -- probably wont work
 		sm.event.sendToCharacter(self.unit.character, "sv_recieveEvent", {event = "explode", data = params.data} )
@@ -659,6 +711,21 @@ function WocUnit.sv_recieveEvent(self,params)
 		self.isFollowing = nil
 		self.fleeFrom = nil
 		self.isGoto = nil
+		self.isSpin = false
+	elseif params.event == "spin" then 
+		if self.isSpin == true then
+			print("spinSpeed",self.spinSpeed)
+			self.spinSpeed = self.spinSpeed + 5
+			if self.spinSpeed > 20 then
+				self.spinSPeed = 20
+			end
+		else
+			self.currentState:stop()
+			self.isFollowing = nil
+			self.fleeFrom = nil 
+			self.isGoto = nil 
+			self.isSpin = true
+		end
 	end
 end
 
