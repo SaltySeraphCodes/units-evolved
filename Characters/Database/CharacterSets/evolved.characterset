@@ -93,8 +93,8 @@
 			},
 			"character": 
 			{
-				"scriptPath": "$CONTENT_DATA/Scripts/characters/WocCharacter.lua",
-				"scriptClass": "WocCharacter",
+				"scriptPath": "$CONTENT_DATA/Scripts/characters/PlayerWocCharacter.lua",
+				"scriptClass": "PlayerWocCharacter",
 				"data": {}
 			},
 			"movement":

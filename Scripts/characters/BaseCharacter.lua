@@ -2,27 +2,10 @@ BaseCharacter = class( nil )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function BaseCharacter.server_onCreate( self )
 	self.character.publicData = {}
 	self.sv = {}
-
+	print("newBaseChar")
 
 
 
@@ -74,12 +57,12 @@ function BaseCharacter.client_onCreate( self )
 	self.character.clientPublicData = {}
 	self.cl = {}
 	self.cl.waterMovementSpeedFraction = 1.0
-
+	self.cl.playerHovering = false -- if player is hovering or not
 	local player = self.character:getPlayer()
 	if sm.exists( player ) then
 		if player ~= sm.localPlayer.getPlayer() then
 			local name = player:getName()
-			self.character:setNameTag( name )
+			self.character:setNameTag( name ) -- Can remove/hide nametag here
 		else
 			-- if setNameTag is called here you will be able to see your own name, can be changed during runtime
 		end
@@ -150,6 +133,17 @@ function BaseCharacter.client_onFixedUpdate( self, deltaTime )
 		self.cl.waterMovementSpeedFraction = 1.0
 		if self.character.clientPublicData and self.character.clientPublicData.waterMovementSpeedFraction then
 			self.cl.waterMovementSpeedFraction = self.character.clientPublicData.waterMovementSpeedFraction
+		end
+	end
+
+	-- Get hover
+	
+	if self.character then
+		local isHovering = cl_checkHoverChar(self.character)
+		if isHovering then 
+			self.cl.playerHovering = true
+		else
+			self.cl.playerHovering = false
 		end
 	end
 end

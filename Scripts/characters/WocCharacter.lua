@@ -1,18 +1,19 @@
+dofile("BaseChatCharacter.lua")
+
 WocCharacter = class( nil )
 
 function WocCharacter.server_onCreate( self )
-	--print("spawned custom Woc char",self)
-
+	print("spawned custom Woc char",self)
 	self:server_onRefresh()
 
-	local unit = self.character:getUnit()
-	local data = unit:getPublicData()
+	--local unit = self.character:getUnit()
+	--local data = unit:getPublicData()
 
-	if data then
-		self.username = data.username
-		self.userid = data.userid
-		self.network:setClientData( {username = self.username, userid = self.userid} )
-	end
+	--if data then
+	--	self.username = data.username
+	--	self.userid = data.userid
+	--	self.network:setClientData( {username = self.username, userid = self.userid} )
+	--end
 
 end
  
@@ -25,15 +26,15 @@ function WocCharacter.client_onClientDataUpdate( self, data )
 end
 
 function WocCharacter.server_onRefresh( self )
-	--print("refreshed woc")
+	print("refreshed woc")
 	--self:client_onRefresh()
 end
 
 function WocCharacter.client_onCreate( self )
 	self.animations = {}
-	--print( "-- WocCharacter created --" )
+	print( "-- WocCharacter cl created --" )
 
-	self:client_onRefresh()
+	self:client_onRefresh() -- why is this here??
 	self:client_onInit()
 end
 
@@ -43,27 +44,27 @@ function WocCharacter.client_onInit(self) -- initialize
 	--self.chatMessage
 	
 	--print("client initing",self.username,self.userid)
-	self.idTag = sm.gui.createNameTagGui()
-	self.tagText = "#aa00ff" .. (self.username or "") .. "\n #ffffff" .. (self.chatMessage or "") -- format to update text
-    self.idTag:setHost(self.character) -- sets character
-	self.idTag:setRequireLineOfSight( true )
-	self.idTag:setMaxRenderDistance( 1000 )
-	self.idTag:setText( "Text", self.tagText)
-	self.idTag:open()
-	--print("Custom Initialized")
+	--self.idTag = sm.gui.createNameTagGui()
+	--self.tagText = "#aa00ff" .. (self.username or "") .. "\n #ffffff" .. (self.chatMessage or "") -- format to update text
+    --self.idTag:setHost(self.character) -- sets character
+	--self.idTag:setRequireLineOfSight( true )
+	--self.idTag:setMaxRenderDistance( 1000 )
+	--self.idTag:setText( "Text", self.tagText)
+	--self.idTag:open()
+	print("Custom Initialized")
 end
 
 function WocCharacter.client_onDestroy( self )
-	self.idTag:close()
+	--self.idTag:close()
 	--print( "-- WocCharacter destroyed --" )
 end
 
 function WocCharacter.client_onRefresh( self )
-	print( "-- WocCharacter refreshed --")
-	if self.idTag ~= nil then 
-		self.idTag:close()
-	end
-	self:client_onInit()
+	--print( "-- WocCharacter refreshed --")
+	--if self.idTag ~= nil then 
+	--	self.idTag:close()
+	--end
+	--self:client_onInit()
 end
 
 function WocCharacter.client_onGraphicsLoaded( self )
@@ -104,10 +105,10 @@ function WocCharacter.client_onUpdate( self, deltaTime )
 	end
 
 	-- setting name and tag
-	if self.idTag ~= nil then 
-		self.tagText = "#aa00ff" .. (self.username or "") .. "\n #ffffff" .. (self.chatMessage or "") -- format to update text
-		self.idTag:setText( "Text", self.tagText)
-	end
+	--if self.idTag ~= nil then 
+	--	self.tagText = "#aa00ff" .. (self.username or "") .. "\n #ffffff" .. (self.chatMessage or "") -- format to update text
+	--	self.idTag:setText( "Text", self.tagText)
+	--end
 
 	local activeAnimations = self.character:getActiveAnimations()
 	--local debugText = "" .. deltaTime

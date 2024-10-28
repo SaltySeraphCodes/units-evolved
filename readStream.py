@@ -59,7 +59,7 @@ SETTINGS = {
     'interval': 1, # rate in which to check for new commands, BROKEN until fixed...
     'prefix': ['!','/','$','%'],
     'filename': os.path.join(dataBase, 'streamchat.json'),
-    'videoID': "FFZWwK1y3fI", #<-- Update this to your stream ID  (Testing stage: FFZWwK1y3fI) (production?:YWKbVdsyWXc)
+    'videoID': "Q4MWPQ0c5gY", #<-- Update this to your stream ID  (Testing stage: FFZWwK1y3fI) (production?:YWKbVdsyWXc)
     'commands': { # list of commands and parameters, their prices are the values
         'spawn': { # spawns in unit and binds chat member to it -- stuck there until it dies
             'totebot': 0,
@@ -86,9 +86,10 @@ SETTINGS = {
         'stop': 0, # stops unit
         'explode': 0, # explodes unit
         'logout': 0, #saves and removes unit
-        'login': 0 # spawns  user in as saved data or default
+        'login': 0, # spawns  user in as saved data or default
+        'spin': 0 # Spins Unit, repeated uses increases speedd
     },
-    'single': ['wander', 'stop','explode','logout','login'] # list of all single param commands for extra validation
+    'single': ['wander', 'stop','explode','logout','login','spin'] # list of all single param commands for extra validation
 }
 
 def translateCoordinates(params):
