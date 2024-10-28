@@ -1,1 +1,0 @@
-Powershell .\webserver\Scripts\Activate.ps1 & .\webserver\Scripts\python.exe .\application.py
